@@ -220,16 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupAutoFilter(transactionInput, transactionDropdown, TRANSACTION_TYPES);
   setupAutoFilter(accountInput, accountDropdown, ACCOUNTS);
 
-  // Name Format Validation ("Last Name, First Name M.I.")
-  fullNameInput.addEventListener('blur', () => {
-    const val = fullNameInput.value.trim();
-    if (val && !val.includes(',')) {
-      fullNameInput.setCustomValidity('Please follow the format: Last Name, First Name M.I.');
-    } else {
-      fullNameInput.setCustomValidity('');
-    }
-  });
-
   // Form Reset
   resetBtn.addEventListener('click', () => {
     form.reset();
@@ -244,10 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    // Validate Name format
     const nameVal = fullNameInput.value.trim();
-    if (!nameVal.includes(',')) {
-      alert('Please enter Name in the format: Last Name, First Name M.I.');
+    if (!nameVal) {
       fullNameInput.focus();
       return;
     }
