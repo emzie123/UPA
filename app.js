@@ -1,28 +1,24 @@
-// Asset Models lookup
+// Data models & lookups
 const ASSET_MODELS = {
   "Headset": [
     "Jabra Biz 1100 Duo",
-    "Jabra Biz 1100 Mono",
-    "Jabra Biz 1500 Duo",
     "Jabra Biz 1500 Mono",
+    "Jabra Biz 1500 Duo",
     "Jabra Biz 2300 USB",
-    "Jabra Biz 2400 II",
     "Jabra Evolve 20 Stereo",
-    "Jabra Evolve 40 UC",
     "Plantronics Blackwire C3220",
-    "Logitech H390 USB"
+    "Logitech H390"
   ],
   "Laptop": [
     "Dell Latitude 5420",
     "Dell Latitude 3420",
     "HP EliteBook 840 G8",
     "HP ProBook 450 G8",
-    "Lenovo ThinkPad L14 Gen 2",
-    "Lenovo ThinkPad T14s"
+    "Lenovo ThinkPad L14 Gen 2"
   ],
   "Desktop / CPU": [
     "Dell OptiPlex 7080 SFF",
-    "Dell OptiPlex 3080 Micro",
+    "Dell OptiPlex 3080",
     "HP ProDesk 400 G6",
     "Lenovo ThinkCentre M70s"
   ],
@@ -30,20 +26,19 @@ const ASSET_MODELS = {
     "Dell E2216HV 21.5\"",
     "Dell SE2422H 24\"",
     "HP P22v G4 21.5\"",
-    "ViewSonic VA2261H-2"
+    "ViewSonic VA2261H"
   ],
   "Peripherals": [
     "Standard USB Keyboard",
     "Standard Optical Mouse",
     "DisplayPort to HDMI Cable",
-    "Ethernet Cat6 Patch Cable (3m)",
-    "USB-C Multi-port Adapter Hub",
-    "Standard 3-Prong Power Cable"
+    "Ethernet Cat6 Cable (3m)",
+    "USB-C Multi-port Adapter",
+    "Power Cable (3-prong)"
   ],
   "Other": [
     "UPS / Battery Backup Unit",
     "Webcam HD 1080p",
-    "Barcode Scanner Handheld",
     "Other Device (Specify in Remarks)"
   ]
 };
@@ -54,25 +49,23 @@ const TRANSACTION_TYPES = [
   "Replacement",
   "Disposal",
   "Transfer",
-  "Temporary Loan",
-  "Repair Turnover",
-  "Hardware Upgrade"
+  "Temporary Loan"
 ];
 
 const ACCOUNTS = [
-  "Concentrix Internal / IT Ops",
+  "Concentrix Internal / Ops",
   "Retail Support Account",
   "FinTech & Banking Services",
   "Healthcare Solutions",
   "Telco Customer Care",
   "Tech Support Tier 1/2",
-  "E-Commerce & Logistics",
-  "Travel & Hospitality Services"
+  "E-Commerce Logistics",
+  "Travel & Hospitality"
 ];
 
-// Helper to format date & time upon submission
-function getFormattedTimestamp(dateObj = new Date()) {
-  return dateObj.toLocaleString('en-US', {
+// Helper to format date
+function getFormattedDateTime(d = new Date()) {
+  return d.toLocaleString('en-US', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
@@ -83,167 +76,73 @@ function getFormattedTimestamp(dateObj = new Date()) {
   });
 }
 
-function escapeHtml(str) {
-  if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-  // Multi-step Wizard Navigation
-  let currentStep = 1;
-  const totalSteps = 3;
-
-  const progressBar = document.getElementById('stepperProgressBar');
-  const stepButtons = document.querySelectorAll('.step-btn');
-  const stepPanels = document.querySelectorAll('.form-step-panel');
-  
-  function updateStepUI(targetStep) {
-    currentStep = targetStep;
-
-    // Progress bar width
-    const percentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
-    // For 3 steps: 1 => 20%, 2 => 60%, 3 => 100% or equal thirds
-    const widths = { 1: '33.33%', 2: '66.66%', 3: '100%' };
-    progressBar.style.width = widths[currentStep] || '33.33%';
-
-    // Buttons active/completed status
-    stepButtons.forEach(btn => {
-      const step = parseInt(btn.dataset.step, 10);
-      btn.classList.remove('active', 'completed');
-      if (step === currentStep) {
-        btn.classList.add('active');
-      } else if (step < currentStep) {
-        btn.classList.add('completed');
-      }
-    });
-
-    // Toggle panels
-    stepPanels.forEach(panel => {
-      const panelStep = parseInt(panel.dataset.panel, 10);
-      if (panelStep === currentStep) {
-        panel.classList.add('active');
-        // Auto-focus first input in newly active panel
-        const firstInput = panel.querySelector('input:not([type="hidden"]), select, textarea');
-        if (firstInput) {
-          setTimeout(() => firstInput.focus(), 150);
-        }
-      } else {
-        panel.classList.remove('active');
-      }
-    });
-  }
-
-  // Validate fields in a specific step panel
-  function validateStep(stepNum) {
-    const activePanel = document.querySelector(`.form-step-panel[data-panel="${stepNum}"]`);
-    if (!activePanel) return true;
-
-    const inputs = activePanel.querySelectorAll('input, select, textarea');
-    for (let input of inputs) {
-      if (!input.checkValidity()) {
-        input.reportValidity();
-        input.focus();
-        return false;
-      }
-    }
-    return true;
-  }
-
-  // Next Buttons
-  document.querySelectorAll('.next-step-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const nextStep = parseInt(btn.dataset.next, 10);
-      if (validateStep(currentStep)) {
-        updateStepUI(nextStep);
-      }
-    });
-  });
-
-  // Prev Buttons
-  document.querySelectorAll('.prev-step-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const prevStep = parseInt(btn.dataset.prev, 10);
-      updateStepUI(prevStep);
-    });
-  });
-
-  // Direct Click on Stepper Indicator (can always go back)
-  stepButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetStep = parseInt(btn.dataset.step, 10);
-      if (targetStep < currentStep) {
-        updateStepUI(targetStep);
-      } else if (targetStep > currentStep) {
-        if (validateStep(currentStep)) {
-          updateStepUI(targetStep);
-        }
-      }
-    });
-  });
-
-  // Form elements
-  const form = document.getElementById('masterLogbookForm');
+  // Elements
+  const form = document.getElementById('assetForm');
+  const dateDisplay = document.getElementById('dateDisplay');
   const ticketInput = document.getElementById('ticketNumber');
-  const ticketCount = document.getElementById('ticketCount');
-  
-  const transactionInput = document.getElementById('transactionType');
-  const transactionDropdown = document.getElementById('transactionDropdown');
-  
+  const ticketCounter = document.getElementById('ticketCounter');
+  const serialInput = document.getElementById('serialNumber');
+  const serialCounter = document.getElementById('serialCounter');
+  const workdayInput = document.getElementById('workdayId');
+  const workdayCounter = document.getElementById('workdayCounter');
   const assetTypeSelect = document.getElementById('assetType');
   const assetModelSelect = document.getElementById('assetModel');
-  
-  const serialInput = document.getElementById('serialNumber');
-  const serialCount = document.getElementById('serialCount');
-  
-  const assetStatusSelect = document.getElementById('assetStatus');
-  
-  const accountInput = document.getElementById('account');
-  const accountDropdown = document.getElementById('accountDropdown');
-  
-  const fullNameInput = document.getElementById('fullName');
-  
-  const workdayInput = document.getElementById('workdayId');
-  const workdayCount = document.getElementById('workdayCount');
-  
-  const emailInput = document.getElementById('emailAddress');
-  const remarksInput = document.getElementById('remarks');
-  const resetBtn = document.getElementById('resetBtn');
-
-  // Modal elements
-  const receiptModal = document.getElementById('receiptModal');
-  const modalDetails = document.getElementById('modalDetails');
+  const transactionInput = document.getElementById('transactionType');
+  const transactionList = document.getElementById('transactionDatalist');
+  const accountInput = document.getElementById('accountInput');
+  const accountList = document.getElementById('accountDatalist');
+  const modalBackdrop = document.getElementById('modalBackdrop');
   const closeModalBtn = document.getElementById('closeModalBtn');
+  const submissionDetails = document.getElementById('submissionDetails');
+  const historyTableBody = document.getElementById('historyTableBody');
+  const emptyHistory = document.getElementById('emptyHistory');
+  const historyTableContainer = document.getElementById('historyTableContainer');
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  const roleSelect = document.getElementById('roleSelect');
+  const adminBadge = document.getElementById('adminBadge');
 
-  // Character Limit Counters
-  function initCharCounter(inputEl, counterEl, maxLimit) {
-    inputEl.setAttribute('maxlength', maxLimit);
-    const handler = () => {
-      const len = inputEl.value.length;
-      counterEl.textContent = `${len}/${maxLimit}`;
-      if (len >= maxLimit) {
+  // Live system date indicator
+  function updateLiveClock() {
+    if (dateDisplay) {
+      dateDisplay.value = `${getFormattedDateTime()} (Auto-filled on submit)`;
+    }
+  }
+  updateLiveClock();
+  setInterval(updateLiveClock, 30000);
+
+  // Setup Character Counters
+  function setupCounter(input, counterEl, max) {
+    input.setAttribute('maxlength', max);
+    const update = () => {
+      const len = input.value.length;
+      counterEl.textContent = `${len} / ${max}`;
+      if (len >= max) {
         counterEl.classList.add('limit-reached');
       } else {
         counterEl.classList.remove('limit-reached');
       }
     };
-    inputEl.addEventListener('input', handler);
-    handler();
+    input.addEventListener('input', update);
+    update();
   }
 
-  initCharCounter(ticketInput, ticketCount, 20);
-  initCharCounter(serialInput, serialCount, 25);
-  initCharCounter(workdayInput, workdayCount, 12);
+  setupCounter(ticketInput, ticketCounter, 20);
+  setupCounter(serialInput, serialCounter, 25);
+  setupCounter(workdayInput, workdayCounter, 12);
 
-  // Populate Asset Models dynamically
-  function populateModels(type) {
-    assetModelSelect.innerHTML = '<option value="" disabled selected>Select model...</option>';
-    const models = ASSET_MODELS[type] || [];
+  // Populate Asset Models according to selected Asset Type
+  function populateModels(selectedType) {
+    assetModelSelect.innerHTML = '<option value="" disabled selected>Select an asset model</option>';
     
+    let models = [];
+    if (selectedType && ASSET_MODELS[selectedType]) {
+      models = ASSET_MODELS[selectedType];
+    } else {
+      // Flatten all models
+      Object.values(ASSET_MODELS).forEach(list => models.push(...list));
+    }
+
     models.forEach(model => {
       const opt = document.createElement('option');
       opt.value = model;
@@ -251,172 +150,257 @@ document.addEventListener('DOMContentLoaded', () => {
       assetModelSelect.appendChild(opt);
     });
 
-    const customOpt = document.createElement('option');
-    customOpt.value = "Other / Custom Model";
-    customOpt.textContent = "— Other Model —";
-    assetModelSelect.appendChild(customOpt);
+    const otherOpt = document.createElement('option');
+    otherOpt.value = "Other Model";
+    otherOpt.textContent = "— Other / Unlisted Model —";
+    assetModelSelect.appendChild(otherOpt);
   }
 
-  // Initialize with Headset
+  // Initial population of models (defaults to Headset as in document)
   populateModels(assetTypeSelect.value);
 
   assetTypeSelect.addEventListener('change', (e) => {
     populateModels(e.target.value);
   });
 
-  // Auto-Filter Combobox
-  function setupAutoFilter(inputEl, dropdownEl, itemsList) {
-    function showMatches(filterText = '') {
-      const q = filterText.trim().toLowerCase();
-      const matches = itemsList.filter(item => item.toLowerCase().includes(q));
-      dropdownEl.innerHTML = '';
-
-      if (matches.length === 0) {
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'autocomplete-empty';
-        emptyDiv.textContent = 'No matching options';
-        dropdownEl.appendChild(emptyDiv);
+  // Reusable Auto-Filter Setup for text inputs with popup list
+  function setupAutoFilter(inputEl, datalistEl, items) {
+    function renderList(query = '') {
+      const filtered = items.filter(item => 
+        item.toLowerCase().includes(query.trim().toLowerCase())
+      );
+      datalistEl.innerHTML = '';
+      if (filtered.length === 0) {
+        const div = document.createElement('div');
+        div.className = 'filter-item';
+        div.style.color = '#94a3b8';
+        div.textContent = 'No matching options';
+        datalistEl.appendChild(div);
       } else {
-        matches.forEach(item => {
-          const itemDiv = document.createElement('div');
-          itemDiv.className = 'autocomplete-item';
-          itemDiv.textContent = item;
-          itemDiv.addEventListener('mousedown', (e) => {
-            e.preventDefault();
+        filtered.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'filter-item';
+          div.textContent = item;
+          div.addEventListener('mousedown', (evt) => {
+            evt.preventDefault();
             inputEl.value = item;
-            dropdownEl.classList.remove('open');
+            datalistEl.classList.remove('open');
           });
-          dropdownEl.appendChild(itemDiv);
+          datalistEl.appendChild(div);
         });
       }
     }
 
     inputEl.addEventListener('focus', () => {
-      showMatches(inputEl.value);
-      dropdownEl.classList.add('open');
+      renderList(inputEl.value);
+      datalistEl.classList.add('open');
     });
 
     inputEl.addEventListener('input', () => {
-      showMatches(inputEl.value);
-      dropdownEl.classList.add('open');
+      renderList(inputEl.value);
+      datalistEl.classList.add('open');
     });
 
     inputEl.addEventListener('blur', () => {
       setTimeout(() => {
-        dropdownEl.classList.remove('open');
+        datalistEl.classList.remove('open');
       }, 150);
     });
   }
 
-  setupAutoFilter(transactionInput, transactionDropdown, TRANSACTION_TYPES);
-  setupAutoFilter(accountInput, accountDropdown, ACCOUNTS);
+  setupAutoFilter(transactionInput, transactionList, TRANSACTION_TYPES);
+  setupAutoFilter(accountInput, accountList, ACCOUNTS);
 
-  // Form Reset
-  resetBtn.addEventListener('click', () => {
-    form.reset();
-    assetTypeSelect.value = "Headset";
-    populateModels("Headset");
-    initCharCounter(ticketInput, ticketCount, 20);
-    initCharCounter(serialInput, serialCount, 25);
-    initCharCounter(workdayInput, workdayCount, 12);
-    updateStepUI(1);
+  // Load Submissions History from localStorage
+  let submissions = [];
+  try {
+    const saved = localStorage.getItem('upa_submissions');
+    if (saved) {
+      submissions = JSON.parse(saved);
+    }
+  } catch (err) {
+    submissions = [];
+  }
+
+  function renderHistory() {
+    if (!historyTableBody) return;
+    if (submissions.length === 0) {
+      emptyHistory.style.display = 'block';
+      historyTableContainer.style.display = 'none';
+      historyTableBody.innerHTML = '';
+    } else {
+      emptyHistory.style.display = 'none';
+      historyTableContainer.style.display = 'block';
+      historyTableBody.innerHTML = submissions.map((item, idx) => `
+        <tr>
+          <td><span style="font-weight:600;">${item.ticketNumber}</span></td>
+          <td>${item.submissionDate}</td>
+          <td>${item.name}</td>
+          <td><span class="role-pill">${item.transactionType}</span></td>
+          <td>${item.assetType}</td>
+          <td>${item.assetModel}</td>
+          <td><code>${item.serialNumber}</code></td>
+          <td>${item.account}</td>
+          <td>${item.assetStatus}</td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  renderHistory();
+
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', () => {
+      if (confirm('Clear local submission history log?')) {
+        submissions = [];
+        localStorage.removeItem('upa_submissions');
+        renderHistory();
+      }
+    });
+  }
+
+  // Format validation helper for Last Name, First Name M.I.
+  const nameInput = document.getElementById('employeeName');
+  nameInput.addEventListener('blur', () => {
+    const val = nameInput.value.trim();
+    if (val && !val.includes(',')) {
+      nameInput.setCustomValidity('Please follow the format: Last Name, First Name M.I. (e.g. Dela Cruz, Juan M.)');
+    } else {
+      nameInput.setCustomValidity('');
+    }
   });
 
-  // Form Submission
+  // Handle Form Submission
   form.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    // Validate step 3 fields
-    if (!validateStep(3)) {
+    // Check name format requirement
+    const nameVal = nameInput.value.trim();
+    if (!nameVal.includes(',')) {
+      alert('Please use the requested format for Name: "Last Name, First Name M.I."');
+      nameInput.focus();
       return;
     }
 
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    // Auto-filled date & timestamp on submission
-    const submissionTime = getFormattedTimestamp();
+    const currentTimestamp = getFormattedDateTime();
 
     const record = {
-      timestamp: submissionTime,
+      id: Date.now(),
+      submissionDate: currentTimestamp,
       ticketNumber: ticketInput.value.trim(),
       transactionType: transactionInput.value.trim(),
       assetType: assetTypeSelect.value,
       assetModel: assetModelSelect.value,
       serialNumber: serialInput.value.trim(),
-      quantity: 1,
-      assetStatus: assetStatusSelect.value,
+      quantity: 1, // Fixed per requirements
+      assetStatus: document.getElementById('assetStatus').value,
       account: accountInput.value.trim(),
-      name: fullNameInput.value.trim(),
+      name: nameVal,
       workdayId: workdayInput.value.trim(),
-      email: emailInput.value.trim(),
-      remarks: remarksInput.value.trim() || 'None'
+      remarks: document.getElementById('remarks').value.trim() || 'N/A',
+      email: document.getElementById('userEmail').value.trim()
     };
 
-    // Populate Receipt Modal
-    modalDetails.innerHTML = `
-      <div class="modal-label">Date &amp; Time:</div>
-      <div class="modal-val">${record.timestamp}</div>
+    // Save to history list
+    submissions.unshift(record);
+    try {
+      localStorage.setItem('upa_submissions', JSON.stringify(submissions));
+    } catch(e) {}
+    renderHistory();
 
-      <div class="modal-label">Ticket Number:</div>
-      <div class="modal-val"><strong>${escapeHtml(record.ticketNumber)}</strong></div>
-
-      <div class="modal-label">Transaction:</div>
-      <div class="modal-val">${escapeHtml(record.transactionType)}</div>
-
-      <div class="modal-label">Asset:</div>
-      <div class="modal-val">${escapeHtml(record.assetType)} &bull; ${escapeHtml(record.assetModel)}</div>
-
-      <div class="modal-label">Serial Number:</div>
-      <div class="modal-val"><code>${escapeHtml(record.serialNumber)}</code></div>
-
-      <div class="modal-label">Quantity:</div>
-      <div class="modal-val">1</div>
-
-      <div class="modal-label">Status:</div>
-      <div class="modal-val">${escapeHtml(record.assetStatus)}</div>
-
-      <div class="modal-label">Account:</div>
-      <div class="modal-val">${escapeHtml(record.account)}</div>
-
-      <div class="modal-label">Name:</div>
-      <div class="modal-val">${escapeHtml(record.name)}</div>
-
-      <div class="modal-label">Workday ID:</div>
-      <div class="modal-val">${escapeHtml(record.workdayId)}</div>
-
-      <div class="modal-label">Email:</div>
-      <div class="modal-val">${escapeHtml(record.email)}</div>
-
-      <div class="modal-label">Remarks:</div>
-      <div class="modal-val">${escapeHtml(record.remarks)}</div>
+    // Render Modal Preview
+    submissionDetails.innerHTML = `
+      <tr>
+        <td>System Submission Date:</td>
+        <td><span style="color: var(--primary);">${record.submissionDate}</span> (Auto-Filled)</td>
+      </tr>
+      <tr>
+        <td>Ticket Number:</td>
+        <td>${record.ticketNumber}</td>
+      </tr>
+      <tr>
+        <td>Transaction Type:</td>
+        <td><span class="role-pill">${record.transactionType}</span></td>
+      </tr>
+      <tr>
+        <td>Asset Type:</td>
+        <td>${record.assetType}</td>
+      </tr>
+      <tr>
+        <td>Asset Model:</td>
+        <td>${record.assetModel}</td>
+      </tr>
+      <tr>
+        <td>Serial Number:</td>
+        <td><code>${record.serialNumber}</code></td>
+      </tr>
+      <tr>
+        <td>Quantity:</td>
+        <td><strong>${record.quantity}</strong> (Fixed)</td>
+      </tr>
+      <tr>
+        <td>Asset Status:</td>
+        <td>${record.assetStatus}</td>
+      </tr>
+      <tr>
+        <td>Account:</td>
+        <td>${record.account}</td>
+      </tr>
+      <tr>
+        <td>Employee Name:</td>
+        <td>${record.name}</td>
+      </tr>
+      <tr>
+        <td>Workday ID:</td>
+        <td>${record.workdayId}</td>
+      </tr>
+      <tr>
+        <td>Concentrix / Personal Email:</td>
+        <td>${record.email}</td>
+      </tr>
+      <tr>
+        <td>Remarks:</td>
+        <td>${record.remarks}</td>
+      </tr>
     `;
 
-    receiptModal.classList.add('active');
-    receiptModal.setAttribute('aria-hidden', 'false');
+    modalBackdrop.classList.add('active');
 
-    // Reset form fields and return to Step 1
+    // Reset form fields while preserving defaults
     form.reset();
     assetTypeSelect.value = "Headset";
     populateModels("Headset");
-    initCharCounter(ticketInput, ticketCount, 20);
-    initCharCounter(serialInput, serialCount, 25);
-    initCharCounter(workdayInput, workdayCount, 12);
-    updateStepUI(1);
+    setupCounter(ticketInput, ticketCounter, 20);
+    setupCounter(serialInput, serialCounter, 25);
+    setupCounter(workdayInput, workdayCounter, 12);
+    updateLiveClock();
   });
 
-  // Modal Close
+  // Close modal
   closeModalBtn.addEventListener('click', () => {
-    receiptModal.classList.remove('active');
-    receiptModal.setAttribute('aria-hidden', 'true');
+    modalBackdrop.classList.remove('active');
   });
 
-  receiptModal.addEventListener('click', (e) => {
-    if (e.target === receiptModal) {
-      receiptModal.classList.remove('active');
-      receiptModal.setAttribute('aria-hidden', 'true');
+  modalBackdrop.addEventListener('click', (e) => {
+    if (e.target === modalBackdrop) {
+      modalBackdrop.classList.remove('active');
     }
   });
+
+  // Role Access Switcher (Addressing question for Sir Nani: Intern vs Admin dashboard)
+  if (roleSelect && adminBadge) {
+    roleSelect.addEventListener('change', (e) => {
+      if (e.target.value === 'admin') {
+        adminBadge.textContent = 'Admin Dashboard View';
+        adminBadge.style.background = '#fef3c7';
+        adminBadge.style.color = '#92400e';
+        adminBadge.style.borderColor = '#fde68a';
+      } else {
+        adminBadge.textContent = 'Intern Form View';
+        adminBadge.style.background = 'var(--primary-light)';
+        adminBadge.style.color = 'var(--primary)';
+        adminBadge.style.borderColor = 'var(--primary-border)';
+      }
+    });
+  }
 });
