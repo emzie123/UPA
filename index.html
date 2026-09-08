@@ -21,15 +21,43 @@
       <p class="subtitle">Hardware &amp; Equipment Registration System</p>
     </header>
 
-    <!-- Registration Form -->
+    <!-- Multi-Step Registration Form Card -->
     <main class="form-wrapper">
+      
+      <!-- Stepper / Progress Bar -->
+      <div class="stepper-nav" aria-label="Registration Steps">
+        <div class="stepper-track">
+          <div class="stepper-bar" id="stepperProgressBar" style="width: 33.33%;"></div>
+        </div>
+
+        <div class="steps-row">
+          <button type="button" class="step-btn active" id="stepIndicator1" data-step="1">
+            <span class="step-num">1</span>
+            <span class="step-label">Transaction</span>
+          </button>
+          
+          <button type="button" class="step-btn" id="stepIndicator2" data-step="2">
+            <span class="step-num">2</span>
+            <span class="step-label">Equipment</span>
+          </button>
+          
+          <button type="button" class="step-btn" id="stepIndicator3" data-step="3">
+            <span class="step-num">3</span>
+            <span class="step-label">Custodian</span>
+          </button>
+        </div>
+      </div>
+
       <form id="masterLogbookForm" class="minimal-form" novalidate>
         
-        <!-- Transaction & Ticket Info -->
-        <div class="form-section">
-          <div class="section-label">Transaction Details</div>
-          
-          <div class="form-grid grid-cols-2">
+        <!-- ================= STEP 1: Transaction Details ================= -->
+        <section class="form-step-panel active" id="stepPanel1" data-panel="1">
+          <div class="step-intro">
+            <h2 class="step-title">Transaction Information</h2>
+            <p class="step-desc">Enter the ticket tracking code and select the transaction type.</p>
+          </div>
+
+          <div class="step-fields">
             <!-- Ticket Number -->
             <div class="field-group">
               <div class="field-header">
@@ -65,180 +93,219 @@
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Asset Specifications -->
-        <div class="form-section">
-          <div class="section-label">Asset Information</div>
+          <div class="step-actions right-only">
+            <button type="button" class="btn-solid next-step-btn" data-next="2">
+              <span>Next: Equipment</span>
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+        </section>
 
-          <div class="form-grid grid-cols-2">
-            <!-- Type of Asset -->
-            <div class="field-group">
-              <div class="field-header">
-                <label for="assetType">Type of Asset <span class="req-star">*</span></label>
-              </div>
-              <select id="assetType" class="form-select" required>
-                <option value="Headset" selected>Headset</option>
-                <option value="Laptop">Laptop</option>
-                <option value="Desktop / CPU">Desktop / CPU</option>
-                <option value="Monitor">Monitor</option>
-                <option value="Peripherals">Peripherals</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <!-- Machine Name (Asset Model) -->
-            <div class="field-group">
-              <div class="field-header">
-                <label for="assetModel">Machine Name (Asset Model) <span class="req-star">*</span></label>
-              </div>
-              <select id="assetModel" class="form-select" required>
-                <!-- Populated dynamically based on Type of Asset -->
-              </select>
-            </div>
+        <!-- ================= STEP 2: Asset Specifications ================= -->
+        <section class="form-step-panel" id="stepPanel2" data-panel="2">
+          <div class="step-intro">
+            <h2 class="step-title">Equipment Specifications</h2>
+            <p class="step-desc">Specify hardware category, model, and serial number.</p>
           </div>
 
-          <div class="form-grid grid-cols-3 asset-secondary-grid">
-            <!-- Serial Number -->
-            <div class="field-group">
-              <div class="field-header">
-                <label for="serialNumber">Serial Number <span class="req-star">*</span></label>
-                <span class="char-count" id="serialCount">0/25</span>
+          <div class="step-fields">
+            <div class="form-grid grid-cols-2">
+              <!-- Type of Asset -->
+              <div class="field-group">
+                <div class="field-header">
+                  <label for="assetType">Type of Asset <span class="req-star">*</span></label>
+                </div>
+                <select id="assetType" class="form-select" required>
+                  <option value="Headset" selected>Headset</option>
+                  <option value="Laptop">Laptop</option>
+                  <option value="Desktop / CPU">Desktop / CPU</option>
+                  <option value="Monitor">Monitor</option>
+                  <option value="Peripherals">Peripherals</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
-              <input 
-                type="text" 
-                id="serialNumber" 
-                class="form-input mono" 
-                placeholder="Enter serial number" 
-                maxlength="25"
-                required 
-                autocomplete="off"
-              />
+
+              <!-- Machine Name (Asset Model) -->
+              <div class="field-group">
+                <div class="field-header">
+                  <label for="assetModel">Machine Name (Asset Model) <span class="req-star">*</span></label>
+                </div>
+                <select id="assetModel" class="form-select" required>
+                  <!-- Populated dynamically based on Type of Asset -->
+                </select>
+              </div>
             </div>
 
-            <!-- Quantity -->
-            <div class="field-group">
-              <div class="field-header">
-                <label for="quantity">Quantity</label>
-              </div>
-              <input 
-                type="text" 
-                id="quantity" 
-                class="form-input fixed-input" 
-                value="1" 
-                readonly 
-                tabindex="-1"
-                aria-label="Quantity"
-              />
-            </div>
-
-            <!-- Asset Status -->
-            <div class="field-group">
-              <div class="field-header">
-                <label for="assetStatus">Asset Status <span class="req-star">*</span></label>
-              </div>
-              <select id="assetStatus" class="form-select" required>
-                <option value="" disabled selected>Select status...</option>
-                <option value="Working / Deployed">Working / Deployed</option>
-                <option value="In Stock / Available">In Stock / Available</option>
-                <option value="Defective / For Repair">Defective / For Repair</option>
-                <option value="Returned / Pending Inspection">Returned / Pending Inspection</option>
-                <option value="Disposed / Scrapped">Disposed / Scrapped</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Custodian & Account Details -->
-        <div class="form-section">
-          <div class="section-label">Custodian Information</div>
-
-          <div class="form-grid grid-cols-2">
-            <!-- Account -->
-            <div class="field-group">
-              <div class="field-header">
-                <label for="account">Account <span class="req-star">*</span></label>
-              </div>
-              <div class="autocomplete-wrap">
+            <div class="form-grid grid-cols-2">
+              <!-- Serial Number -->
+              <div class="field-group">
+                <div class="field-header">
+                  <label for="serialNumber">Serial Number <span class="req-star">*</span></label>
+                  <span class="char-count" id="serialCount">0/25</span>
+                </div>
                 <input 
                   type="text" 
-                  id="account" 
-                  class="form-input" 
-                  placeholder="Select or type account..." 
+                  id="serialNumber" 
+                  class="form-input mono" 
+                  placeholder="Enter serial number" 
+                  maxlength="25"
                   required 
                   autocomplete="off"
                 />
-                <div class="autocomplete-dropdown" id="accountDropdown"></div>
+              </div>
+
+              <!-- Asset Status -->
+              <div class="field-group">
+                <div class="field-header">
+                  <label for="assetStatus">Asset Status <span class="req-star">*</span></label>
+                </div>
+                <select id="assetStatus" class="form-select" required>
+                  <option value="" disabled selected>Select status...</option>
+                  <option value="Working / Deployed">Working / Deployed</option>
+                  <option value="In Stock / Available">In Stock / Available</option>
+                  <option value="Defective / For Repair">Defective / For Repair</option>
+                  <option value="Returned / Pending Inspection">Returned / Pending Inspection</option>
+                  <option value="Disposed / Scrapped">Disposed / Scrapped</option>
+                </select>
               </div>
             </div>
 
-            <!-- Name -->
-            <div class="field-group">
-              <div class="field-header">
-                <label for="fullName">Name <span class="req-star">*</span></label>
-              </div>
-              <input 
-                type="text" 
-                id="fullName" 
-                class="form-input" 
-                placeholder="Last Name, First Name M.I." 
-                required 
-                autocomplete="off"
-              />
-            </div>
-
-            <!-- Workday ID -->
-            <div class="field-group">
-              <div class="field-header">
-                <label for="workdayId">Workday ID <span class="req-star">*</span></label>
-                <span class="char-count" id="workdayCount">0/12</span>
-              </div>
-              <input 
-                type="text" 
-                id="workdayId" 
-                class="form-input mono" 
-                placeholder="Enter Workday ID" 
-                maxlength="12"
-                required 
-                autocomplete="off"
-              />
-            </div>
-
-            <!-- Concentrix Email / Personal (if resign) -->
-            <div class="field-group">
-              <div class="field-header">
-                <label for="emailAddress">Concentrix Email / Personal (if resign) <span class="req-star">*</span></label>
-              </div>
-              <input 
-                type="email" 
-                id="emailAddress" 
-                class="form-input" 
-                placeholder="employee@concentrix.com or personal email" 
-                required 
-                autocomplete="off"
-              />
+            <!-- Fixed Quantity Notice Badge -->
+            <div class="qty-badge-row">
+              <span class="qty-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                </svg>
+                Quantity: <strong>1 item</strong> per registration entry
+              </span>
+              <input type="hidden" id="quantity" value="1" />
             </div>
           </div>
 
-          <!-- Remarks -->
-          <div class="field-group remarks-group">
-            <div class="field-header">
-              <label for="remarks">Remarks <span class="opt-tag">(Optional)</span></label>
-            </div>
-            <textarea 
-              id="remarks" 
-              class="form-textarea" 
-              rows="3" 
-              placeholder="Additional notes or specifications..."
-            ></textarea>
+          <div class="step-actions split">
+            <button type="button" class="btn-ghost prev-step-btn" data-prev="1">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              <span>Back</span>
+            </button>
+            <button type="button" class="btn-solid next-step-btn" data-next="3">
+              <span>Next: Custodian</span>
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
           </div>
-        </div>
+        </section>
 
-        <!-- Form Actions -->
-        <div class="form-footer">
-          <button type="button" class="btn-ghost" id="resetBtn">Reset</button>
-          <button type="submit" class="btn-solid" id="submitBtn">Submit</button>
-        </div>
+        <!-- ================= STEP 3: Custodian & Remarks ================= -->
+        <section class="form-step-panel" id="stepPanel3" data-panel="3">
+          <div class="step-intro">
+            <h2 class="step-title">Custodian Details</h2>
+            <p class="step-desc">Enter employee identification, email, and any notes.</p>
+          </div>
+
+          <div class="step-fields">
+            <div class="form-grid grid-cols-2">
+              <!-- Account -->
+              <div class="field-group">
+                <div class="field-header">
+                  <label for="account">Account <span class="req-star">*</span></label>
+                </div>
+                <div class="autocomplete-wrap">
+                  <input 
+                    type="text" 
+                    id="account" 
+                    class="form-input" 
+                    placeholder="Select or type account..." 
+                    required 
+                    autocomplete="off"
+                  />
+                  <div class="autocomplete-dropdown" id="accountDropdown"></div>
+                </div>
+              </div>
+
+              <!-- Name -->
+              <div class="field-group">
+                <div class="field-header">
+                  <label for="fullName">Name <span class="req-star">*</span></label>
+                </div>
+                <input 
+                  type="text" 
+                  id="fullName" 
+                  class="form-input" 
+                  placeholder="Last Name, First Name M.I." 
+                  required 
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+
+            <div class="form-grid grid-cols-2">
+              <!-- Workday ID -->
+              <div class="field-group">
+                <div class="field-header">
+                  <label for="workdayId">Workday ID <span class="req-star">*</span></label>
+                  <span class="char-count" id="workdayCount">0/12</span>
+                </div>
+                <input 
+                  type="text" 
+                  id="workdayId" 
+                  class="form-input mono" 
+                  placeholder="Enter Workday ID" 
+                  maxlength="12"
+                  required 
+                  autocomplete="off"
+                />
+              </div>
+
+              <!-- Concentrix Email / Personal (if resign) -->
+              <div class="field-group">
+                <div class="field-header">
+                  <label for="emailAddress">Concentrix Email / Personal (if resign) <span class="req-star">*</span></label>
+                </div>
+                <input 
+                  type="email" 
+                  id="emailAddress" 
+                  class="form-input" 
+                  placeholder="employee@concentrix.com or personal email" 
+                  required 
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+
+            <!-- Remarks -->
+            <div class="field-group">
+              <div class="field-header">
+                <label for="remarks">Remarks <span class="opt-tag">(Optional)</span></label>
+              </div>
+              <textarea 
+                id="remarks" 
+                class="form-textarea" 
+                rows="3" 
+                placeholder="Additional notes, included cables/accessories, physical condition..."
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="step-actions split">
+            <button type="button" class="btn-ghost prev-step-btn" data-prev="2">
+              <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              <span>Back</span>
+            </button>
+            <div class="submit-wrap">
+              <button type="button" class="btn-ghost" id="resetBtn">Reset</button>
+              <button type="submit" class="btn-solid" id="submitBtn">Submit</button>
+            </div>
+          </div>
+        </section>
+
       </form>
     </main>
 

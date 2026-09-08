@@ -94,9 +94,100 @@ function escapeHtml(str) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Elements
-  const form = document.getElementById('masterLogbookForm');
+  // Multi-step Wizard Navigation
+  let currentStep = 1;
+  const totalSteps = 3;
+
+  const progressBar = document.getElementById('stepperProgressBar');
+  const stepButtons = document.querySelectorAll('.step-btn');
+  const stepPanels = document.querySelectorAll('.form-step-panel');
   
+  function updateStepUI(targetStep) {
+    currentStep = targetStep;
+
+    // Progress bar width
+    const percentage = ((currentStep - 1) / (totalSteps - 1)) * 100;
+    // For 3 steps: 1 => 20%, 2 => 60%, 3 => 100% or equal thirds
+    const widths = { 1: '33.33%', 2: '66.66%', 3: '100%' };
+    progressBar.style.width = widths[currentStep] || '33.33%';
+
+    // Buttons active/completed status
+    stepButtons.forEach(btn => {
+      const step = parseInt(btn.dataset.step, 10);
+      btn.classList.remove('active', 'completed');
+      if (step === currentStep) {
+        btn.classList.add('active');
+      } else if (step < currentStep) {
+        btn.classList.add('completed');
+      }
+    });
+
+    // Toggle panels
+    stepPanels.forEach(panel => {
+      const panelStep = parseInt(panel.dataset.panel, 10);
+      if (panelStep === currentStep) {
+        panel.classList.add('active');
+        // Auto-focus first input in newly active panel
+        const firstInput = panel.querySelector('input:not([type="hidden"]), select, textarea');
+        if (firstInput) {
+          setTimeout(() => firstInput.focus(), 150);
+        }
+      } else {
+        panel.classList.remove('active');
+      }
+    });
+  }
+
+  // Validate fields in a specific step panel
+  function validateStep(stepNum) {
+    const activePanel = document.querySelector(`.form-step-panel[data-panel="${stepNum}"]`);
+    if (!activePanel) return true;
+
+    const inputs = activePanel.querySelectorAll('input, select, textarea');
+    for (let input of inputs) {
+      if (!input.checkValidity()) {
+        input.reportValidity();
+        input.focus();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Next Buttons
+  document.querySelectorAll('.next-step-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const nextStep = parseInt(btn.dataset.next, 10);
+      if (validateStep(currentStep)) {
+        updateStepUI(nextStep);
+      }
+    });
+  });
+
+  // Prev Buttons
+  document.querySelectorAll('.prev-step-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const prevStep = parseInt(btn.dataset.prev, 10);
+      updateStepUI(prevStep);
+    });
+  });
+
+  // Direct Click on Stepper Indicator (can always go back)
+  stepButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetStep = parseInt(btn.dataset.step, 10);
+      if (targetStep < currentStep) {
+        updateStepUI(targetStep);
+      } else if (targetStep > currentStep) {
+        if (validateStep(currentStep)) {
+          updateStepUI(targetStep);
+        }
+      }
+    });
+  });
+
+  // Form elements
+  const form = document.getElementById('masterLogbookForm');
   const ticketInput = document.getElementById('ticketNumber');
   const ticketCount = document.getElementById('ticketCount');
   
@@ -123,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const remarksInput = document.getElementById('remarks');
   const resetBtn = document.getElementById('resetBtn');
 
-  // Modal
+  // Modal elements
   const receiptModal = document.getElementById('receiptModal');
   const modalDetails = document.getElementById('modalDetails');
   const closeModalBtn = document.getElementById('closeModalBtn');
@@ -228,15 +319,15 @@ document.addEventListener('DOMContentLoaded', () => {
     initCharCounter(ticketInput, ticketCount, 20);
     initCharCounter(serialInput, serialCount, 25);
     initCharCounter(workdayInput, workdayCount, 12);
+    updateStepUI(1);
   });
 
   // Form Submission
   form.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const nameVal = fullNameInput.value.trim();
-    if (!nameVal) {
-      fullNameInput.focus();
+    // Validate step 3 fields
+    if (!validateStep(3)) {
       return;
     }
 
@@ -258,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
       quantity: 1,
       assetStatus: assetStatusSelect.value,
       account: accountInput.value.trim(),
-      name: nameVal,
+      name: fullNameInput.value.trim(),
       workdayId: workdayInput.value.trim(),
       email: emailInput.value.trim(),
       remarks: remarksInput.value.trim() || 'None'
@@ -306,13 +397,14 @@ document.addEventListener('DOMContentLoaded', () => {
     receiptModal.classList.add('active');
     receiptModal.setAttribute('aria-hidden', 'false');
 
-    // Reset form fields
+    // Reset form fields and return to Step 1
     form.reset();
     assetTypeSelect.value = "Headset";
     populateModels("Headset");
     initCharCounter(ticketInput, ticketCount, 20);
     initCharCounter(serialInput, serialCount, 25);
     initCharCounter(workdayInput, workdayCount, 12);
+    updateStepUI(1);
   });
 
   // Modal Close
