@@ -1,14 +1,14 @@
-# Asset Transaction Form (UPA)
+# UPA IT MASTER LOGBOOK V4
 
-Standardized hardware and equipment transaction logging system.
+A minimalist, light blue equipment registration form and hardware transaction system for IT operations.
 
-🌐 **Live Demo / Website:** [https://emzie123.github.io/UPA/](https://emzie123.github.io/UPA/)
+🌐 **Live Website:** [https://emzie123.github.io/UPA/](https://emzie123.github.io/UPA/)
 
 ---
 
 ## Features
-- **Auto-Timestamping**: Automatically captures submission date and time.
-- **Dynamic Asset Fields**: Tailored fields based on asset type (System Unit, Laptop, Monitor, Peripherals).
-- **Serial Number Formatting**: Input validation and formatting based on brand standards.
-- **Role-Based Views**: Intern Access and Admin Access views.
-- **Submission History Log**: In-session transaction history log with ticket generation.
+- **Minimalist Light Blue Aesthetic**: Balanced spacing, clean typography (`Inter`), and modern input focus styles.
+- **Auto-Timestamping**: Date and time automatically captured upon form submission.
+- **Dynamic Asset Models**: Automatically populated models based on asset selection, prominently including Jabra Biz series.
+- **Input Formatting & Validation**: Character counters and validated name formatting (`Last Name, First Name M.I.`).
+- **Confirmation Receipt Modal**: Clean summary preview upon submission.
