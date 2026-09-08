@@ -1,24 +1,28 @@
-// Data models & lookups
+// Asset Models lookup - prominently featuring Jabra Biz for Headset
 const ASSET_MODELS = {
   "Headset": [
     "Jabra Biz 1100 Duo",
-    "Jabra Biz 1500 Mono",
+    "Jabra Biz 1100 Mono",
     "Jabra Biz 1500 Duo",
+    "Jabra Biz 1500 Mono",
     "Jabra Biz 2300 USB",
+    "Jabra Biz 2400 II",
     "Jabra Evolve 20 Stereo",
+    "Jabra Evolve 40 UC",
     "Plantronics Blackwire C3220",
-    "Logitech H390"
+    "Logitech H390 USB"
   ],
   "Laptop": [
     "Dell Latitude 5420",
     "Dell Latitude 3420",
     "HP EliteBook 840 G8",
     "HP ProBook 450 G8",
-    "Lenovo ThinkPad L14 Gen 2"
+    "Lenovo ThinkPad L14 Gen 2",
+    "Lenovo ThinkPad T14s"
   ],
   "Desktop / CPU": [
     "Dell OptiPlex 7080 SFF",
-    "Dell OptiPlex 3080",
+    "Dell OptiPlex 3080 Micro",
     "HP ProDesk 400 G6",
     "Lenovo ThinkCentre M70s"
   ],
@@ -26,19 +30,20 @@ const ASSET_MODELS = {
     "Dell E2216HV 21.5\"",
     "Dell SE2422H 24\"",
     "HP P22v G4 21.5\"",
-    "ViewSonic VA2261H"
+    "ViewSonic VA2261H-2"
   ],
   "Peripherals": [
     "Standard USB Keyboard",
     "Standard Optical Mouse",
     "DisplayPort to HDMI Cable",
-    "Ethernet Cat6 Cable (3m)",
-    "USB-C Multi-port Adapter",
-    "Power Cable (3-prong)"
+    "Ethernet Cat6 Patch Cable (3m)",
+    "USB-C Multi-port Adapter Hub",
+    "Standard 3-Prong Power Cable"
   ],
   "Other": [
     "UPS / Battery Backup Unit",
     "Webcam HD 1080p",
+    "Barcode Scanner Handheld",
     "Other Device (Specify in Remarks)"
   ]
 };
@@ -49,23 +54,25 @@ const TRANSACTION_TYPES = [
   "Replacement",
   "Disposal",
   "Transfer",
-  "Temporary Loan"
+  "Temporary Loan",
+  "Repair Turnover",
+  "Hardware Upgrade"
 ];
 
 const ACCOUNTS = [
-  "Concentrix Internal / Ops",
+  "Concentrix Internal / IT Ops",
   "Retail Support Account",
   "FinTech & Banking Services",
   "Healthcare Solutions",
   "Telco Customer Care",
   "Tech Support Tier 1/2",
-  "E-Commerce Logistics",
-  "Travel & Hospitality"
+  "E-Commerce & Logistics",
+  "Travel & Hospitality Services"
 ];
 
-// Helper to format date
-function getFormattedDateTime(d = new Date()) {
-  return d.toLocaleString('en-US', {
+// Date and Time formatting
+function getFormattedTimestamp(dateObj = new Date()) {
+  return dateObj.toLocaleString('en-US', {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
@@ -78,71 +85,94 @@ function getFormattedDateTime(d = new Date()) {
 
 document.addEventListener('DOMContentLoaded', () => {
   // Elements
-  const form = document.getElementById('assetForm');
-  const dateDisplay = document.getElementById('dateDisplay');
+  const form = document.getElementById('masterLogbookForm');
+  const liveClockDisplay = document.getElementById('liveClockDisplay');
+  const autoDatePill = document.getElementById('autoDatePill');
+  
   const ticketInput = document.getElementById('ticketNumber');
-  const ticketCounter = document.getElementById('ticketCounter');
-  const serialInput = document.getElementById('serialNumber');
-  const serialCounter = document.getElementById('serialCounter');
-  const workdayInput = document.getElementById('workdayId');
-  const workdayCounter = document.getElementById('workdayCounter');
+  const ticketCount = document.getElementById('ticketCount');
+  
+  const transactionInput = document.getElementById('transactionType');
+  const transactionDropdown = document.getElementById('transactionDropdown');
+  
   const assetTypeSelect = document.getElementById('assetType');
   const assetModelSelect = document.getElementById('assetModel');
-  const transactionInput = document.getElementById('transactionType');
-  const transactionList = document.getElementById('transactionDatalist');
-  const accountInput = document.getElementById('accountInput');
-  const accountList = document.getElementById('accountDatalist');
-  const modalBackdrop = document.getElementById('modalBackdrop');
-  const closeModalBtn = document.getElementById('closeModalBtn');
-  const submissionDetails = document.getElementById('submissionDetails');
-  const historyTableBody = document.getElementById('historyTableBody');
-  const emptyHistory = document.getElementById('emptyHistory');
-  const historyTableContainer = document.getElementById('historyTableContainer');
-  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-  const roleSelect = document.getElementById('roleSelect');
-  const adminBadge = document.getElementById('adminBadge');
+  
+  const serialInput = document.getElementById('serialNumber');
+  const serialCount = document.getElementById('serialCount');
+  
+  const quantityInput = document.getElementById('quantity');
+  const assetStatusSelect = document.getElementById('assetStatus');
+  
+  const accountInput = document.getElementById('account');
+  const accountDropdown = document.getElementById('accountDropdown');
+  
+  const fullNameInput = document.getElementById('fullName');
+  
+  const workdayInput = document.getElementById('workdayId');
+  const workdayCount = document.getElementById('workdayCount');
+  
+  const emailInput = document.getElementById('emailAddress');
+  const remarksInput = document.getElementById('remarks');
+  const resetBtn = document.getElementById('resetBtn');
 
-  // Live system date indicator
+  // Table & Controls
+  const tableSearch = document.getElementById('tableSearch');
+  const exportBtn = document.getElementById('exportBtn');
+  const clearLogBtn = document.getElementById('clearLogBtn');
+  const recordCount = document.getElementById('recordCount');
+  const emptyState = document.getElementById('emptyState');
+  const recordsTable = document.getElementById('recordsTable');
+  const tableBody = document.getElementById('tableBody');
+
+  // Receipt Modal
+  const receiptModal = document.getElementById('receiptModal');
+  const modalDetails = document.getElementById('modalDetails');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+
+  // Live Clock & Auto-Date Preview
   function updateLiveClock() {
-    if (dateDisplay) {
-      dateDisplay.value = `${getFormattedDateTime()} (Auto-filled on submit)`;
+    const nowStr = getFormattedTimestamp();
+    if (liveClockDisplay) {
+      liveClockDisplay.textContent = nowStr;
+    }
+    if (autoDatePill) {
+      autoDatePill.textContent = `${nowStr} (Auto)`;
     }
   }
   updateLiveClock();
-  setInterval(updateLiveClock, 30000);
+  setInterval(updateLiveClock, 1000);
 
-  // Setup Character Counters
-  function setupCounter(input, counterEl, max) {
-    input.setAttribute('maxlength', max);
-    const update = () => {
-      const len = input.value.length;
-      counterEl.textContent = `${len} / ${max}`;
-      if (len >= max) {
+  // Character Limit Helper
+  function initCharCounter(inputEl, counterEl, maxLimit) {
+    inputEl.setAttribute('maxlength', maxLimit);
+    const handler = () => {
+      const len = inputEl.value.length;
+      counterEl.textContent = `${len}/${maxLimit}`;
+      if (len >= maxLimit) {
         counterEl.classList.add('limit-reached');
       } else {
         counterEl.classList.remove('limit-reached');
       }
     };
-    input.addEventListener('input', update);
-    update();
+    inputEl.addEventListener('input', handler);
+    handler();
   }
 
-  setupCounter(ticketInput, ticketCounter, 20);
-  setupCounter(serialInput, serialCounter, 25);
-  setupCounter(workdayInput, workdayCounter, 12);
+  // 2. Ticket Number (20 chars max)
+  initCharCounter(ticketInput, ticketCount, 20);
 
-  // Populate Asset Models according to selected Asset Type
-  function populateModels(selectedType) {
-    assetModelSelect.innerHTML = '<option value="" disabled selected>Select an asset model</option>';
+  // 6. Serial Number (25 chars max)
+  initCharCounter(serialInput, serialCount, 25);
+
+  // 11. Workday ID (12 chars max)
+  initCharCounter(workdayInput, workdayCount, 12);
+
+  // 5. Populate Asset Models dynamically based on 4. Type of Asset
+  function populateModels(type) {
+    assetModelSelect.innerHTML = '<option value="" disabled selected>Select an asset model...</option>';
+    const models = ASSET_MODELS[type] || [];
     
-    let models = [];
-    if (selectedType && ASSET_MODELS[selectedType]) {
-      models = ASSET_MODELS[selectedType];
-    } else {
-      // Flatten all models
-      Object.values(ASSET_MODELS).forEach(list => models.push(...list));
-    }
-
     models.forEach(model => {
       const opt = document.createElement('option');
       opt.value = model;
@@ -150,257 +180,348 @@ document.addEventListener('DOMContentLoaded', () => {
       assetModelSelect.appendChild(opt);
     });
 
-    const otherOpt = document.createElement('option');
-    otherOpt.value = "Other Model";
-    otherOpt.textContent = "— Other / Unlisted Model —";
-    assetModelSelect.appendChild(otherOpt);
+    const customOpt = document.createElement('option');
+    customOpt.value = "Other / Custom Model";
+    customOpt.textContent = "— Other / Unlisted Model —";
+    assetModelSelect.appendChild(customOpt);
   }
 
-  // Initial population of models (defaults to Headset as in document)
+  // Initialize with Headset models (default)
   populateModels(assetTypeSelect.value);
 
   assetTypeSelect.addEventListener('change', (e) => {
     populateModels(e.target.value);
   });
 
-  // Reusable Auto-Filter Setup for text inputs with popup list
-  function setupAutoFilter(inputEl, datalistEl, items) {
-    function renderList(query = '') {
-      const filtered = items.filter(item => 
-        item.toLowerCase().includes(query.trim().toLowerCase())
-      );
-      datalistEl.innerHTML = '';
-      if (filtered.length === 0) {
-        const div = document.createElement('div');
-        div.className = 'filter-item';
-        div.style.color = '#94a3b8';
-        div.textContent = 'No matching options';
-        datalistEl.appendChild(div);
+  // Reusable Searchable Auto-Filter Combobox
+  function setupAutoFilter(inputEl, dropdownEl, itemsList) {
+    function showMatches(filterText = '') {
+      const q = filterText.trim().toLowerCase();
+      const matches = itemsList.filter(item => item.toLowerCase().includes(q));
+      dropdownEl.innerHTML = '';
+
+      if (matches.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'autocomplete-empty';
+        emptyDiv.textContent = 'No matching items';
+        dropdownEl.appendChild(emptyDiv);
       } else {
-        filtered.forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'filter-item';
-          div.textContent = item;
-          div.addEventListener('mousedown', (evt) => {
-            evt.preventDefault();
+        matches.forEach(item => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'autocomplete-item';
+          itemDiv.textContent = item;
+          itemDiv.addEventListener('mousedown', (e) => {
+            e.preventDefault();
             inputEl.value = item;
-            datalistEl.classList.remove('open');
+            dropdownEl.classList.remove('open');
           });
-          datalistEl.appendChild(div);
+          dropdownEl.appendChild(itemDiv);
         });
       }
     }
 
     inputEl.addEventListener('focus', () => {
-      renderList(inputEl.value);
-      datalistEl.classList.add('open');
+      showMatches(inputEl.value);
+      dropdownEl.classList.add('open');
     });
 
     inputEl.addEventListener('input', () => {
-      renderList(inputEl.value);
-      datalistEl.classList.add('open');
+      showMatches(inputEl.value);
+      dropdownEl.classList.add('open');
     });
 
     inputEl.addEventListener('blur', () => {
       setTimeout(() => {
-        datalistEl.classList.remove('open');
+        dropdownEl.classList.remove('open');
       }, 150);
     });
   }
 
-  setupAutoFilter(transactionInput, transactionList, TRANSACTION_TYPES);
-  setupAutoFilter(accountInput, accountList, ACCOUNTS);
+  // 3. Transaction Type (Auto-Filtered)
+  setupAutoFilter(transactionInput, transactionDropdown, TRANSACTION_TYPES);
 
-  // Load Submissions History from localStorage
-  let submissions = [];
-  try {
-    const saved = localStorage.getItem('upa_submissions');
-    if (saved) {
-      submissions = JSON.parse(saved);
-    }
-  } catch (err) {
-    submissions = [];
-  }
+  // 9. Account (Auto-Filtered)
+  setupAutoFilter(accountInput, accountDropdown, ACCOUNTS);
 
-  function renderHistory() {
-    if (!historyTableBody) return;
-    if (submissions.length === 0) {
-      emptyHistory.style.display = 'block';
-      historyTableContainer.style.display = 'none';
-      historyTableBody.innerHTML = '';
-    } else {
-      emptyHistory.style.display = 'none';
-      historyTableContainer.style.display = 'block';
-      historyTableBody.innerHTML = submissions.map((item, idx) => `
-        <tr>
-          <td><span style="font-weight:600;">${item.ticketNumber}</span></td>
-          <td>${item.submissionDate}</td>
-          <td>${item.name}</td>
-          <td><span class="role-pill">${item.transactionType}</span></td>
-          <td>${item.assetType}</td>
-          <td>${item.assetModel}</td>
-          <td><code>${item.serialNumber}</code></td>
-          <td>${item.account}</td>
-          <td>${item.assetStatus}</td>
-        </tr>
-      `).join('');
-    }
-  }
-
-  renderHistory();
-
-  if (clearHistoryBtn) {
-    clearHistoryBtn.addEventListener('click', () => {
-      if (confirm('Clear local submission history log?')) {
-        submissions = [];
-        localStorage.removeItem('upa_submissions');
-        renderHistory();
-      }
-    });
-  }
-
-  // Format validation helper for Last Name, First Name M.I.
-  const nameInput = document.getElementById('employeeName');
-  nameInput.addEventListener('blur', () => {
-    const val = nameInput.value.trim();
+  // 10. Name Format Validation ("Last Name, First Name M.I.")
+  fullNameInput.addEventListener('blur', () => {
+    const val = fullNameInput.value.trim();
     if (val && !val.includes(',')) {
-      nameInput.setCustomValidity('Please follow the format: Last Name, First Name M.I. (e.g. Dela Cruz, Juan M.)');
+      fullNameInput.setCustomValidity('Please follow the format: Last Name, First Name M.I.');
     } else {
-      nameInput.setCustomValidity('');
+      fullNameInput.setCustomValidity('');
     }
   });
 
-  // Handle Form Submission
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
+  // LocalStorage Persistence
+  const STORAGE_KEY = 'upa_it_master_logbook_v4';
+  let entries = [];
 
-    // Check name format requirement
-    const nameVal = nameInput.value.trim();
-    if (!nameVal.includes(',')) {
-      alert('Please use the requested format for Name: "Last Name, First Name M.I."');
-      nameInput.focus();
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      entries = JSON.parse(raw);
+    }
+  } catch (err) {
+    entries = [];
+  }
+
+  // Render Logbook Records Table
+  function renderTable(filterQuery = '') {
+    const q = filterQuery.trim().toLowerCase();
+    const filtered = entries.filter(e => {
+      if (!q) return true;
+      return (
+        e.ticketNumber.toLowerCase().includes(q) ||
+        e.name.toLowerCase().includes(q) ||
+        e.serialNumber.toLowerCase().includes(q) ||
+        e.account.toLowerCase().includes(q) ||
+        e.assetType.toLowerCase().includes(q) ||
+        e.assetModel.toLowerCase().includes(q)
+      );
+    });
+
+    recordCount.textContent = `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`;
+
+    if (entries.length === 0) {
+      emptyState.style.display = 'block';
+      recordsTable.style.display = 'none';
+      tableBody.innerHTML = '';
       return;
     }
 
-    const currentTimestamp = getFormattedDateTime();
+    emptyState.style.display = 'none';
+    recordsTable.style.display = 'table';
+
+    if (filtered.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+            No matching records found for "${filterQuery}"
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tableBody.innerHTML = filtered.map(row => `
+      <tr>
+        <td><strong>${escapeHtml(row.ticketNumber)}</strong></td>
+        <td>${escapeHtml(row.timestamp)}</td>
+        <td>${escapeHtml(row.name)}</td>
+        <td><span class="status-pill">${escapeHtml(row.transactionType)}</span></td>
+        <td>${escapeHtml(row.assetType)}</td>
+        <td>${escapeHtml(row.assetModel)}</td>
+        <td><span class="code-cell">${escapeHtml(row.serialNumber)}</span></td>
+        <td>${row.quantity}</td>
+        <td>${escapeHtml(row.account)}</td>
+        <td><span class="status-pill ${row.assetStatus.includes('Working') ? 'status-working' : ''}">${escapeHtml(row.assetStatus)}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  renderTable();
+
+  // Search Filter
+  tableSearch.addEventListener('input', (e) => {
+    renderTable(e.target.value);
+  });
+
+  // Export CSV
+  exportBtn.addEventListener('click', () => {
+    if (entries.length === 0) {
+      alert('No records to export.');
+      return;
+    }
+
+    const headers = [
+      "Ticket Number",
+      "Timestamp",
+      "Name",
+      "Workday ID",
+      "Email",
+      "Transaction Type",
+      "Asset Type",
+      "Asset Model",
+      "Serial Number",
+      "Quantity",
+      "Asset Status",
+      "Account",
+      "Remarks"
+    ];
+
+    const rows = entries.map(item => [
+      `"${(item.ticketNumber || '').replace(/"/g, '""')}"`,
+      `"${(item.timestamp || '').replace(/"/g, '""')}"`,
+      `"${(item.name || '').replace(/"/g, '""')}"`,
+      `"${(item.workdayId || '').replace(/"/g, '""')}"`,
+      `"${(item.email || '').replace(/"/g, '""')}"`,
+      `"${(item.transactionType || '').replace(/"/g, '""')}"`,
+      `"${(item.assetType || '').replace(/"/g, '""')}"`,
+      `"${(item.assetModel || '').replace(/"/g, '""')}"`,
+      `"${(item.serialNumber || '').replace(/"/g, '""')}"`,
+      item.quantity,
+      `"${(item.assetStatus || '').replace(/"/g, '""')}"`,
+      `"${(item.account || '').replace(/"/g, '""')}"`,
+      `"${(item.remarks || '').replace(/"/g, '""')}"`
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `UPA_IT_Master_Logbook_V4_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
+  // Clear Log
+  clearLogBtn.addEventListener('click', () => {
+    if (entries.length === 0) return;
+    if (confirm('Are you sure you want to clear all local logbook records?')) {
+      entries = [];
+      localStorage.removeItem(STORAGE_KEY);
+      renderTable();
+    }
+  });
+
+  // Form Reset
+  resetBtn.addEventListener('click', () => {
+    form.reset();
+    assetTypeSelect.value = "Headset";
+    populateModels("Headset");
+    initCharCounter(ticketInput, ticketCount, 20);
+    initCharCounter(serialInput, serialCount, 25);
+    initCharCounter(workdayInput, workdayCount, 12);
+  });
+
+  // Form Submission
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    // Validate Name format
+    const nameVal = fullNameInput.value.trim();
+    if (!nameVal.includes(',')) {
+      alert('Please enter your name in the format: Last Name, First Name M.I. (e.g. Dela Cruz, Juan M.)');
+      fullNameInput.focus();
+      return;
+    }
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    // 1. DATE: Automatically captured on submission
+    const recordedTimestamp = getFormattedTimestamp();
 
     const record = {
       id: Date.now(),
-      submissionDate: currentTimestamp,
+      timestamp: recordedTimestamp,
       ticketNumber: ticketInput.value.trim(),
       transactionType: transactionInput.value.trim(),
       assetType: assetTypeSelect.value,
       assetModel: assetModelSelect.value,
       serialNumber: serialInput.value.trim(),
       quantity: 1, // Fixed per requirements
-      assetStatus: document.getElementById('assetStatus').value,
+      assetStatus: assetStatusSelect.value,
       account: accountInput.value.trim(),
       name: nameVal,
       workdayId: workdayInput.value.trim(),
-      remarks: document.getElementById('remarks').value.trim() || 'N/A',
-      email: document.getElementById('userEmail').value.trim()
+      email: emailInput.value.trim(),
+      remarks: remarksInput.value.trim() || 'None'
     };
 
-    // Save to history list
-    submissions.unshift(record);
+    // Store record
+    entries.unshift(record);
     try {
-      localStorage.setItem('upa_submissions', JSON.stringify(submissions));
-    } catch(e) {}
-    renderHistory();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    } catch (err) {}
 
-    // Render Modal Preview
-    submissionDetails.innerHTML = `
-      <tr>
-        <td>System Submission Date:</td>
-        <td><span style="color: var(--primary);">${record.submissionDate}</span> (Auto-Filled)</td>
-      </tr>
-      <tr>
-        <td>Ticket Number:</td>
-        <td>${record.ticketNumber}</td>
-      </tr>
-      <tr>
-        <td>Transaction Type:</td>
-        <td><span class="role-pill">${record.transactionType}</span></td>
-      </tr>
-      <tr>
-        <td>Asset Type:</td>
-        <td>${record.assetType}</td>
-      </tr>
-      <tr>
-        <td>Asset Model:</td>
-        <td>${record.assetModel}</td>
-      </tr>
-      <tr>
-        <td>Serial Number:</td>
-        <td><code>${record.serialNumber}</code></td>
-      </tr>
-      <tr>
-        <td>Quantity:</td>
-        <td><strong>${record.quantity}</strong> (Fixed)</td>
-      </tr>
-      <tr>
-        <td>Asset Status:</td>
-        <td>${record.assetStatus}</td>
-      </tr>
-      <tr>
-        <td>Account:</td>
-        <td>${record.account}</td>
-      </tr>
-      <tr>
-        <td>Employee Name:</td>
-        <td>${record.name}</td>
-      </tr>
-      <tr>
-        <td>Workday ID:</td>
-        <td>${record.workdayId}</td>
-      </tr>
-      <tr>
-        <td>Concentrix / Personal Email:</td>
-        <td>${record.email}</td>
-      </tr>
-      <tr>
-        <td>Remarks:</td>
-        <td>${record.remarks}</td>
-      </tr>
+    renderTable();
+
+    // Populate Modal
+    modalDetails.innerHTML = `
+      <div class="modal-label">Timestamp:</div>
+      <div class="modal-val">${record.timestamp} <span style="font-size:0.7rem; color:var(--text-muted);">(Auto-Filled)</span></div>
+
+      <div class="modal-label">Ticket #:</div>
+      <div class="modal-val"><strong>${escapeHtml(record.ticketNumber)}</strong></div>
+
+      <div class="modal-label">Transaction:</div>
+      <div class="modal-val">${escapeHtml(record.transactionType)}</div>
+
+      <div class="modal-label">Asset:</div>
+      <div class="modal-val">${escapeHtml(record.assetType)} &bull; ${escapeHtml(record.assetModel)}</div>
+
+      <div class="modal-label">Serial Number:</div>
+      <div class="modal-val"><span class="code-cell">${escapeHtml(record.serialNumber)}</span></div>
+
+      <div class="modal-label">Quantity:</div>
+      <div class="modal-val">1 (Fixed)</div>
+
+      <div class="modal-label">Asset Status:</div>
+      <div class="modal-val">${escapeHtml(record.assetStatus)}</div>
+
+      <div class="modal-label">Account:</div>
+      <div class="modal-val">${escapeHtml(record.account)}</div>
+
+      <div class="modal-label">Custodian Name:</div>
+      <div class="modal-val">${escapeHtml(record.name)}</div>
+
+      <div class="modal-label">Workday ID:</div>
+      <div class="modal-val">${escapeHtml(record.workdayId)}</div>
+
+      <div class="modal-label">Email:</div>
+      <div class="modal-val">${escapeHtml(record.email)}</div>
+
+      <div class="modal-label">Remarks:</div>
+      <div class="modal-val">${escapeHtml(record.remarks)}</div>
     `;
 
-    modalBackdrop.classList.add('active');
+    receiptModal.classList.add('active');
+    receiptModal.setAttribute('aria-hidden', 'false');
 
-    // Reset form fields while preserving defaults
+    // Reset fields while keeping standard defaults
     form.reset();
     assetTypeSelect.value = "Headset";
     populateModels("Headset");
-    setupCounter(ticketInput, ticketCounter, 20);
-    setupCounter(serialInput, serialCounter, 25);
-    setupCounter(workdayInput, workdayCounter, 12);
-    updateLiveClock();
+    initCharCounter(ticketInput, ticketCount, 20);
+    initCharCounter(serialInput, serialCount, 25);
+    initCharCounter(workdayInput, workdayCount, 12);
   });
 
-  // Close modal
+  // Modal Close
   closeModalBtn.addEventListener('click', () => {
-    modalBackdrop.classList.remove('active');
+    receiptModal.classList.remove('active');
+    receiptModal.setAttribute('aria-hidden', 'true');
   });
 
-  modalBackdrop.addEventListener('click', (e) => {
-    if (e.target === modalBackdrop) {
-      modalBackdrop.classList.remove('active');
+  receiptModal.addEventListener('click', (e) => {
+    if (e.target === receiptModal) {
+      receiptModal.classList.remove('active');
+      receiptModal.setAttribute('aria-hidden', 'true');
     }
   });
 
-  // Role Access Switcher (Addressing question for Sir Nani: Intern vs Admin dashboard)
-  if (roleSelect && adminBadge) {
+  // Role Switcher
+  const roleSelect = document.getElementById('roleSelect');
+  if (roleSelect) {
     roleSelect.addEventListener('change', (e) => {
-      if (e.target.value === 'admin') {
-        adminBadge.textContent = 'Admin Dashboard View';
-        adminBadge.style.background = '#fef3c7';
-        adminBadge.style.color = '#92400e';
-        adminBadge.style.borderColor = '#fde68a';
-      } else {
-        adminBadge.textContent = 'Intern Form View';
-        adminBadge.style.background = 'var(--primary-light)';
-        adminBadge.style.color = 'var(--primary)';
-        adminBadge.style.borderColor = 'var(--primary-border)';
-      }
+      const isAd = e.target.value === 'admin';
+      document.querySelector('.brand-tag').textContent = isAd ? 'IT ADMIN CONSOLE' : 'IT OPERATIONS';
     });
   }
 });
