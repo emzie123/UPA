@@ -6,7 +6,7 @@
   <title>UPA IT MASTER LOGBOOK V4</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -15,19 +15,22 @@
     <!-- Minimal Header -->
     <header class="app-header">
       <div class="brand-tag-wrap">
-        <span class="brand-badge">UPA IT OPERATIONS</span>
+        <span class="brand-badge">EQUIPMENT REGISTRATION FORM</span>
       </div>
       <h1 class="main-title">UPA IT MASTER LOGBOOK V4</h1>
-      <p class="subtitle">Hardware &amp; Equipment Registration System</p>
+      <p class="subtitle">Hardware &amp; Equipment Registration Portal</p>
     </header>
 
     <!-- Registration Form -->
     <main class="form-wrapper">
       <form id="masterLogbookForm" class="minimal-form" novalidate>
         
-        <!-- Transaction & Ticket Info -->
+        <!-- Section 1: Transaction Information -->
         <div class="form-section">
-          <div class="section-label">Transaction Details</div>
+          <div class="section-title-wrap">
+            <span class="section-badge">01</span>
+            <span class="section-label">Transaction Information</span>
+          </div>
           
           <div class="form-grid grid-cols-2">
             <!-- Ticket Number -->
@@ -67,9 +70,12 @@
           </div>
         </div>
 
-        <!-- Asset Specifications -->
+        <!-- Section 2: Asset Specifications -->
         <div class="form-section">
-          <div class="section-label">Asset Information</div>
+          <div class="section-title-wrap">
+            <span class="section-badge">02</span>
+            <span class="section-label">Asset Specifications</span>
+          </div>
 
           <div class="form-grid grid-cols-2">
             <!-- Type of Asset -->
@@ -149,9 +155,12 @@
           </div>
         </div>
 
-        <!-- Custodian & Account Details -->
+        <!-- Section 3: Custodian Details -->
         <div class="form-section">
-          <div class="section-label">Custodian Information</div>
+          <div class="section-title-wrap">
+            <span class="section-badge">03</span>
+            <span class="section-label">Custodian Details</span>
+          </div>
 
           <div class="form-grid grid-cols-2">
             <!-- Account -->
@@ -181,7 +190,7 @@
                 type="text" 
                 id="fullName" 
                 class="form-input" 
-                placeholder="Enter full name" 
+                placeholder="Last Name, First Name M.I." 
                 required 
                 autocomplete="off"
               />
