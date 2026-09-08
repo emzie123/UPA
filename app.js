@@ -1,4 +1,4 @@
-// Asset Models lookup - prominently featuring Jabra Biz for Headset
+// Asset Models lookup
 const ASSET_MODELS = {
   "Headset": [
     "Jabra Biz 1100 Duo",
@@ -70,7 +70,7 @@ const ACCOUNTS = [
   "Travel & Hospitality Services"
 ];
 
-// Date and Time formatting
+// Helper to format date & time upon submission
 function getFormattedTimestamp(dateObj = new Date()) {
   return dateObj.toLocaleString('en-US', {
     year: 'numeric',
@@ -83,11 +83,19 @@ function getFormattedTimestamp(dateObj = new Date()) {
   });
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Elements
   const form = document.getElementById('masterLogbookForm');
-  const liveClockDisplay = document.getElementById('liveClockDisplay');
-  const autoDatePill = document.getElementById('autoDatePill');
   
   const ticketInput = document.getElementById('ticketNumber');
   const ticketCount = document.getElementById('ticketCount');
@@ -101,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const serialInput = document.getElementById('serialNumber');
   const serialCount = document.getElementById('serialCount');
   
-  const quantityInput = document.getElementById('quantity');
   const assetStatusSelect = document.getElementById('assetStatus');
   
   const accountInput = document.getElementById('account');
@@ -116,34 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const remarksInput = document.getElementById('remarks');
   const resetBtn = document.getElementById('resetBtn');
 
-  // Table & Controls
-  const tableSearch = document.getElementById('tableSearch');
-  const exportBtn = document.getElementById('exportBtn');
-  const clearLogBtn = document.getElementById('clearLogBtn');
-  const recordCount = document.getElementById('recordCount');
-  const emptyState = document.getElementById('emptyState');
-  const recordsTable = document.getElementById('recordsTable');
-  const tableBody = document.getElementById('tableBody');
-
-  // Receipt Modal
+  // Modal
   const receiptModal = document.getElementById('receiptModal');
   const modalDetails = document.getElementById('modalDetails');
   const closeModalBtn = document.getElementById('closeModalBtn');
 
-  // Live Clock & Auto-Date Preview
-  function updateLiveClock() {
-    const nowStr = getFormattedTimestamp();
-    if (liveClockDisplay) {
-      liveClockDisplay.textContent = nowStr;
-    }
-    if (autoDatePill) {
-      autoDatePill.textContent = `${nowStr} (Auto)`;
-    }
-  }
-  updateLiveClock();
-  setInterval(updateLiveClock, 1000);
-
-  // Character Limit Helper
+  // Character Limit Counters
   function initCharCounter(inputEl, counterEl, maxLimit) {
     inputEl.setAttribute('maxlength', maxLimit);
     const handler = () => {
@@ -159,18 +144,13 @@ document.addEventListener('DOMContentLoaded', () => {
     handler();
   }
 
-  // 2. Ticket Number (20 chars max)
   initCharCounter(ticketInput, ticketCount, 20);
-
-  // 6. Serial Number (25 chars max)
   initCharCounter(serialInput, serialCount, 25);
-
-  // 11. Workday ID (12 chars max)
   initCharCounter(workdayInput, workdayCount, 12);
 
-  // 5. Populate Asset Models dynamically based on 4. Type of Asset
+  // Populate Asset Models dynamically
   function populateModels(type) {
-    assetModelSelect.innerHTML = '<option value="" disabled selected>Select an asset model...</option>';
+    assetModelSelect.innerHTML = '<option value="" disabled selected>Select model...</option>';
     const models = ASSET_MODELS[type] || [];
     
     models.forEach(model => {
@@ -182,18 +162,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const customOpt = document.createElement('option');
     customOpt.value = "Other / Custom Model";
-    customOpt.textContent = "— Other / Unlisted Model —";
+    customOpt.textContent = "— Other Model —";
     assetModelSelect.appendChild(customOpt);
   }
 
-  // Initialize with Headset models (default)
+  // Initialize with Headset
   populateModels(assetTypeSelect.value);
 
   assetTypeSelect.addEventListener('change', (e) => {
     populateModels(e.target.value);
   });
 
-  // Reusable Searchable Auto-Filter Combobox
+  // Auto-Filter Combobox
   function setupAutoFilter(inputEl, dropdownEl, itemsList) {
     function showMatches(filterText = '') {
       const q = filterText.trim().toLowerCase();
@@ -203,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (matches.length === 0) {
         const emptyDiv = document.createElement('div');
         emptyDiv.className = 'autocomplete-empty';
-        emptyDiv.textContent = 'No matching items';
+        emptyDiv.textContent = 'No matching options';
         dropdownEl.appendChild(emptyDiv);
       } else {
         matches.forEach(item => {
@@ -237,163 +217,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 3. Transaction Type (Auto-Filtered)
   setupAutoFilter(transactionInput, transactionDropdown, TRANSACTION_TYPES);
-
-  // 9. Account (Auto-Filtered)
   setupAutoFilter(accountInput, accountDropdown, ACCOUNTS);
 
-  // 10. Name Format Validation ("Last Name, First Name M.I.")
+  // Name Format Validation ("Last Name, First Name M.I.")
   fullNameInput.addEventListener('blur', () => {
     const val = fullNameInput.value.trim();
     if (val && !val.includes(',')) {
       fullNameInput.setCustomValidity('Please follow the format: Last Name, First Name M.I.');
     } else {
       fullNameInput.setCustomValidity('');
-    }
-  });
-
-  // LocalStorage Persistence
-  const STORAGE_KEY = 'upa_it_master_logbook_v4';
-  let entries = [];
-
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      entries = JSON.parse(raw);
-    }
-  } catch (err) {
-    entries = [];
-  }
-
-  // Render Logbook Records Table
-  function renderTable(filterQuery = '') {
-    const q = filterQuery.trim().toLowerCase();
-    const filtered = entries.filter(e => {
-      if (!q) return true;
-      return (
-        e.ticketNumber.toLowerCase().includes(q) ||
-        e.name.toLowerCase().includes(q) ||
-        e.serialNumber.toLowerCase().includes(q) ||
-        e.account.toLowerCase().includes(q) ||
-        e.assetType.toLowerCase().includes(q) ||
-        e.assetModel.toLowerCase().includes(q)
-      );
-    });
-
-    recordCount.textContent = `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`;
-
-    if (entries.length === 0) {
-      emptyState.style.display = 'block';
-      recordsTable.style.display = 'none';
-      tableBody.innerHTML = '';
-      return;
-    }
-
-    emptyState.style.display = 'none';
-    recordsTable.style.display = 'table';
-
-    if (filtered.length === 0) {
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
-            No matching records found for "${filterQuery}"
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    tableBody.innerHTML = filtered.map(row => `
-      <tr>
-        <td><strong>${escapeHtml(row.ticketNumber)}</strong></td>
-        <td>${escapeHtml(row.timestamp)}</td>
-        <td>${escapeHtml(row.name)}</td>
-        <td><span class="status-pill">${escapeHtml(row.transactionType)}</span></td>
-        <td>${escapeHtml(row.assetType)}</td>
-        <td>${escapeHtml(row.assetModel)}</td>
-        <td><span class="code-cell">${escapeHtml(row.serialNumber)}</span></td>
-        <td>${row.quantity}</td>
-        <td>${escapeHtml(row.account)}</td>
-        <td><span class="status-pill ${row.assetStatus.includes('Working') ? 'status-working' : ''}">${escapeHtml(row.assetStatus)}</span></td>
-      </tr>
-    `).join('');
-  }
-
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  renderTable();
-
-  // Search Filter
-  tableSearch.addEventListener('input', (e) => {
-    renderTable(e.target.value);
-  });
-
-  // Export CSV
-  exportBtn.addEventListener('click', () => {
-    if (entries.length === 0) {
-      alert('No records to export.');
-      return;
-    }
-
-    const headers = [
-      "Ticket Number",
-      "Timestamp",
-      "Name",
-      "Workday ID",
-      "Email",
-      "Transaction Type",
-      "Asset Type",
-      "Asset Model",
-      "Serial Number",
-      "Quantity",
-      "Asset Status",
-      "Account",
-      "Remarks"
-    ];
-
-    const rows = entries.map(item => [
-      `"${(item.ticketNumber || '').replace(/"/g, '""')}"`,
-      `"${(item.timestamp || '').replace(/"/g, '""')}"`,
-      `"${(item.name || '').replace(/"/g, '""')}"`,
-      `"${(item.workdayId || '').replace(/"/g, '""')}"`,
-      `"${(item.email || '').replace(/"/g, '""')}"`,
-      `"${(item.transactionType || '').replace(/"/g, '""')}"`,
-      `"${(item.assetType || '').replace(/"/g, '""')}"`,
-      `"${(item.assetModel || '').replace(/"/g, '""')}"`,
-      `"${(item.serialNumber || '').replace(/"/g, '""')}"`,
-      item.quantity,
-      `"${(item.assetStatus || '').replace(/"/g, '""')}"`,
-      `"${(item.account || '').replace(/"/g, '""')}"`,
-      `"${(item.remarks || '').replace(/"/g, '""')}"`
-    ]);
-
-    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `UPA_IT_Master_Logbook_V4_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
-
-  // Clear Log
-  clearLogBtn.addEventListener('click', () => {
-    if (entries.length === 0) return;
-    if (confirm('Are you sure you want to clear all local logbook records?')) {
-      entries = [];
-      localStorage.removeItem(STORAGE_KEY);
-      renderTable();
     }
   });
 
@@ -414,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Validate Name format
     const nameVal = fullNameInput.value.trim();
     if (!nameVal.includes(',')) {
-      alert('Please enter your name in the format: Last Name, First Name M.I. (e.g. Dela Cruz, Juan M.)');
+      alert('Please enter Name in the format: Last Name, First Name M.I.');
       fullNameInput.focus();
       return;
     }
@@ -424,18 +257,17 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 1. DATE: Automatically captured on submission
-    const recordedTimestamp = getFormattedTimestamp();
+    // Auto-filled date & timestamp on submission
+    const submissionTime = getFormattedTimestamp();
 
     const record = {
-      id: Date.now(),
-      timestamp: recordedTimestamp,
+      timestamp: submissionTime,
       ticketNumber: ticketInput.value.trim(),
       transactionType: transactionInput.value.trim(),
       assetType: assetTypeSelect.value,
       assetModel: assetModelSelect.value,
       serialNumber: serialInput.value.trim(),
-      quantity: 1, // Fixed per requirements
+      quantity: 1,
       assetStatus: assetStatusSelect.value,
       account: accountInput.value.trim(),
       name: nameVal,
@@ -444,20 +276,12 @@ document.addEventListener('DOMContentLoaded', () => {
       remarks: remarksInput.value.trim() || 'None'
     };
 
-    // Store record
-    entries.unshift(record);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-    } catch (err) {}
-
-    renderTable();
-
-    // Populate Modal
+    // Populate Receipt Modal
     modalDetails.innerHTML = `
-      <div class="modal-label">Timestamp:</div>
-      <div class="modal-val">${record.timestamp} <span style="font-size:0.7rem; color:var(--text-muted);">(Auto-Filled)</span></div>
+      <div class="modal-label">Date &amp; Time:</div>
+      <div class="modal-val">${record.timestamp}</div>
 
-      <div class="modal-label">Ticket #:</div>
+      <div class="modal-label">Ticket Number:</div>
       <div class="modal-val"><strong>${escapeHtml(record.ticketNumber)}</strong></div>
 
       <div class="modal-label">Transaction:</div>
@@ -467,18 +291,18 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-val">${escapeHtml(record.assetType)} &bull; ${escapeHtml(record.assetModel)}</div>
 
       <div class="modal-label">Serial Number:</div>
-      <div class="modal-val"><span class="code-cell">${escapeHtml(record.serialNumber)}</span></div>
+      <div class="modal-val"><code>${escapeHtml(record.serialNumber)}</code></div>
 
       <div class="modal-label">Quantity:</div>
-      <div class="modal-val">1 (Fixed)</div>
+      <div class="modal-val">1</div>
 
-      <div class="modal-label">Asset Status:</div>
+      <div class="modal-label">Status:</div>
       <div class="modal-val">${escapeHtml(record.assetStatus)}</div>
 
       <div class="modal-label">Account:</div>
       <div class="modal-val">${escapeHtml(record.account)}</div>
 
-      <div class="modal-label">Custodian Name:</div>
+      <div class="modal-label">Name:</div>
       <div class="modal-val">${escapeHtml(record.name)}</div>
 
       <div class="modal-label">Workday ID:</div>
@@ -494,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
     receiptModal.classList.add('active');
     receiptModal.setAttribute('aria-hidden', 'false');
 
-    // Reset fields while keeping standard defaults
+    // Reset form fields
     form.reset();
     assetTypeSelect.value = "Headset";
     populateModels("Headset");
@@ -515,13 +339,4 @@ document.addEventListener('DOMContentLoaded', () => {
       receiptModal.setAttribute('aria-hidden', 'true');
     }
   });
-
-  // Role Switcher
-  const roleSelect = document.getElementById('roleSelect');
-  if (roleSelect) {
-    roleSelect.addEventListener('change', (e) => {
-      const isAd = e.target.value === 'admin';
-      document.querySelector('.brand-tag').textContent = isAd ? 'IT ADMIN CONSOLE' : 'IT OPERATIONS';
-    });
-  }
 });

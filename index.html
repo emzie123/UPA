@@ -12,61 +12,28 @@
 <body>
   <div class="app-container">
     
-    <!-- Top Minimal Navigation / Header -->
+    <!-- Minimal Header -->
     <header class="app-header">
-      <div class="header-top-row">
-        <div class="brand-badge">
-          <span class="status-dot"></span>
-          <span class="brand-tag">IT OPERATIONS</span>
-          <span class="version-tag">V4.0</span>
-        </div>
-        <div class="header-meta">
-          <span class="live-clock" id="liveClockDisplay">Live System Time</span>
-          <div class="role-switch-wrap">
-            <select id="roleSelect" class="minimal-select" aria-label="Role Access View">
-              <option value="intern">Intern View</option>
-              <option value="admin">Admin View</option>
-            </select>
-          </div>
-        </div>
+      <div class="brand-tag-wrap">
+        <span class="brand-badge">UPA IT OPERATIONS</span>
       </div>
-      
-      <div class="header-title-block">
-        <h1 class="main-title">UPA IT MASTER LOGBOOK V4</h1>
-        <p class="subtitle">Standardized equipment registration, hardware tracking, and transaction logbook.</p>
-      </div>
+      <h1 class="main-title">UPA IT MASTER LOGBOOK V4</h1>
+      <p class="subtitle">Hardware &amp; Equipment Registration System</p>
     </header>
 
-    <!-- Main Registration Form Card -->
+    <!-- Registration Form -->
     <main class="form-wrapper">
       <form id="masterLogbookForm" class="minimal-form" novalidate>
         
-        <!-- 1. DATE: System Auto-Filled Banner (Input Field Removed per Requirements) -->
-        <div class="auto-field-strip">
-          <div class="auto-strip-left">
-            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-            <div class="auto-strip-text">
-              <strong>1. Date &amp; Timestamp</strong>
-              <span>Input field removed. Automatically recorded by system upon submission.</span>
-            </div>
-          </div>
-          <div class="auto-strip-right">
-            <span class="pill-auto" id="autoDatePill">Auto-filled on submit</span>
-          </div>
-        </div>
-
-        <!-- Section 1: Transaction & Ticket Information -->
+        <!-- Transaction & Ticket Info -->
         <div class="form-section">
-          <div class="section-label">Transaction &amp; Ticket Info</div>
+          <div class="section-label">Transaction Details</div>
           
           <div class="form-grid grid-cols-2">
-            <!-- 2. TICKET NUMBER -->
+            <!-- Ticket Number -->
             <div class="field-group">
               <div class="field-header">
-                <label for="ticketNumber">2. Ticket Number <span class="req-star">*</span></label>
+                <label for="ticketNumber">Ticket Number <span class="req-star">*</span></label>
                 <span class="char-count" id="ticketCount">0/20</span>
               </div>
               <input 
@@ -78,14 +45,12 @@
                 required 
                 autocomplete="off"
               />
-              <span class="field-hint">Max 20 characters</span>
             </div>
 
-            <!-- 3. TYPE OF TRANSACTION -->
+            <!-- Type of Transaction -->
             <div class="field-group">
               <div class="field-header">
-                <label for="transactionType">3. Type of Transaction <span class="req-star">*</span></label>
-                <span class="meta-tag">Auto-Filtered</span>
+                <label for="transactionType">Type of Transaction <span class="req-star">*</span></label>
               </div>
               <div class="autocomplete-wrap">
                 <input 
@@ -98,49 +63,46 @@
                 />
                 <div class="autocomplete-dropdown" id="transactionDropdown"></div>
               </div>
-              <span class="field-hint">Searchable: Issuance, Return, Replacement, etc.</span>
             </div>
           </div>
         </div>
 
-        <!-- Section 2: Asset Specifications -->
+        <!-- Asset Specifications -->
         <div class="form-section">
-          <div class="section-label">Asset Specifications</div>
+          <div class="section-label">Asset Information</div>
 
           <div class="form-grid grid-cols-2">
-            <!-- 4. TYPE OF ASSET -->
+            <!-- Type of Asset -->
             <div class="field-group">
               <div class="field-header">
-                <label for="assetType">4. Type of Asset <span class="req-star">*</span></label>
+                <label for="assetType">Type of Asset <span class="req-star">*</span></label>
               </div>
               <select id="assetType" class="form-select" required>
                 <option value="Headset" selected>Headset</option>
                 <option value="Laptop">Laptop</option>
                 <option value="Desktop / CPU">Desktop / CPU</option>
                 <option value="Monitor">Monitor</option>
-                <option value="Peripherals">Peripherals (Keyboard, Mouse, Cables)</option>
-                <option value="Other">Other Equipment</option>
+                <option value="Peripherals">Peripherals</option>
+                <option value="Other">Other</option>
               </select>
-              <span class="field-hint">Select category to load models</span>
             </div>
 
-            <!-- 5. MACHINE NAME (ASSET MODEL) -->
+            <!-- Machine Name (Asset Model) -->
             <div class="field-group">
               <div class="field-header">
-                <label for="assetModel">5. Machine Name (Asset Model) <span class="req-star">*</span></label>
+                <label for="assetModel">Machine Name (Asset Model) <span class="req-star">*</span></label>
               </div>
               <select id="assetModel" class="form-select" required>
-                <!-- Populated dynamically (Includes Jabra Biz & models) -->
+                <!-- Populated dynamically based on Type of Asset -->
               </select>
-              <span class="field-hint">Includes Jabra Biz and verified models</span>
             </div>
           </div>
 
           <div class="form-grid grid-cols-3">
-            <!-- 6. SERIAL NUMBER -->
+            <!-- Serial Number -->
             <div class="field-group">
               <div class="field-header">
-                <label for="serialNumber">6. Serial Number <span class="req-star">*</span></label>
+                <label for="serialNumber">Serial Number <span class="req-star">*</span></label>
                 <span class="char-count" id="serialCount">0/25</span>
               </div>
               <input 
@@ -152,14 +114,12 @@
                 required 
                 autocomplete="off"
               />
-              <span class="field-hint">Max 25 characters</span>
             </div>
 
-            <!-- 7. QTY / QUANTITY -->
+            <!-- Quantity -->
             <div class="field-group">
               <div class="field-header">
-                <label for="quantity">7. Quantity</label>
-                <span class="meta-tag">Fixed</span>
+                <label for="quantity">Quantity</label>
               </div>
               <input 
                 type="text" 
@@ -167,15 +127,15 @@
                 class="form-input fixed-input" 
                 value="1" 
                 readonly 
-                aria-label="Quantity fixed to 1"
+                tabindex="-1"
+                aria-label="Quantity"
               />
-              <span class="field-hint">Fixed quantity: 1 per transaction</span>
             </div>
 
-            <!-- 8. ASSET STATUS -->
+            <!-- Asset Status -->
             <div class="field-group">
               <div class="field-header">
-                <label for="assetStatus">8. Asset Status <span class="req-star">*</span></label>
+                <label for="assetStatus">Asset Status <span class="req-star">*</span></label>
               </div>
               <select id="assetStatus" class="form-select" required>
                 <option value="" disabled selected>Select status...</option>
@@ -185,21 +145,19 @@
                 <option value="Returned / Pending Inspection">Returned / Pending Inspection</option>
                 <option value="Disposed / Scrapped">Disposed / Scrapped</option>
               </select>
-              <span class="field-hint">Current operational condition</span>
             </div>
           </div>
         </div>
 
-        <!-- Section 3: Custodian & Account Details -->
+        <!-- Custodian & Account Details -->
         <div class="form-section">
-          <div class="section-label">Custodian &amp; Account Details</div>
+          <div class="section-label">Custodian Information</div>
 
           <div class="form-grid grid-cols-2">
-            <!-- 9. ACCOUNT -->
+            <!-- Account -->
             <div class="field-group">
               <div class="field-header">
-                <label for="account">9. Account <span class="req-star">*</span></label>
-                <span class="meta-tag">Auto-Filtered</span>
+                <label for="account">Account <span class="req-star">*</span></label>
               </div>
               <div class="autocomplete-wrap">
                 <input 
@@ -212,13 +170,12 @@
                 />
                 <div class="autocomplete-dropdown" id="accountDropdown"></div>
               </div>
-              <span class="field-hint">Searchable program/campaign directory</span>
             </div>
 
-            <!-- 10. NAME -->
+            <!-- Name -->
             <div class="field-group">
               <div class="field-header">
-                <label for="fullName">10. Name <span class="req-star">*</span></label>
+                <label for="fullName">Name <span class="req-star">*</span></label>
               </div>
               <input 
                 type="text" 
@@ -228,33 +185,32 @@
                 required 
                 autocomplete="off"
               />
-              <span class="field-hint">Required format: <strong>Last Name, First Name M.I.</strong></span>
+              <span class="field-hint">Format: Last Name, First Name M.I.</span>
             </div>
           </div>
 
           <div class="form-grid grid-cols-2">
-            <!-- 11. WORKDAY ID -->
+            <!-- Workday ID -->
             <div class="field-group">
               <div class="field-header">
-                <label for="workdayId">11. Workday ID <span class="req-star">*</span></label>
+                <label for="workdayId">Workday ID <span class="req-star">*</span></label>
                 <span class="char-count" id="workdayCount">0/12</span>
               </div>
               <input 
                 type="text" 
                 id="workdayId" 
                 class="form-input mono" 
-                placeholder="e.g. 1029384" 
+                placeholder="Enter Workday ID" 
                 maxlength="12"
                 required 
                 autocomplete="off"
               />
-              <span class="field-hint">Max 12 characters</span>
             </div>
 
-            <!-- 13. CONCENTRIX EMAIL / PERSONAL (IF RESIGN) -->
+            <!-- Concentrix Email / Personal (if resign) -->
             <div class="field-group">
               <div class="field-header">
-                <label for="emailAddress">13. Concentrix Email / Personal (if resign) <span class="req-star">*</span></label>
+                <label for="emailAddress">Concentrix Email / Personal (if resign) <span class="req-star">*</span></label>
               </div>
               <input 
                 type="email" 
@@ -264,95 +220,34 @@
                 required 
                 autocomplete="off"
               />
-              <span class="field-hint">Corporate email or personal email upon exit</span>
             </div>
           </div>
 
-          <!-- 12. REMARKS -->
+          <!-- Remarks -->
           <div class="field-group">
             <div class="field-header">
-              <label for="remarks">12. Remarks <span class="opt-tag">Optional</span></label>
+              <label for="remarks">Remarks <span class="opt-tag">(Optional)</span></label>
             </div>
             <textarea 
               id="remarks" 
               class="form-textarea" 
               rows="3" 
-              placeholder="Additional details, included cables/accessories, physical condition notes..."
+              placeholder="Additional notes or specifications..."
             ></textarea>
-            <span class="field-hint">Optional remarks</span>
           </div>
         </div>
 
-        <!-- Form Footer Buttons -->
+        <!-- Form Actions -->
         <div class="form-footer">
           <button type="button" class="btn-ghost" id="resetBtn">Reset</button>
-          <button type="submit" class="btn-solid" id="submitBtn">
-            <span>Record to Logbook</span>
-            <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
+          <button type="submit" class="btn-solid" id="submitBtn">Submit</button>
         </div>
       </form>
     </main>
 
-    <!-- Master Logbook Entries Table Section -->
-    <section class="logbook-section">
-      <div class="logbook-header">
-        <div class="logbook-title-wrap">
-          <h2 class="logbook-title">Logbook Records</h2>
-          <span class="badge-count" id="recordCount">0 entries</span>
-        </div>
-        <div class="logbook-actions">
-          <input 
-            type="text" 
-            id="tableSearch" 
-            class="search-input" 
-            placeholder="Search records..." 
-            aria-label="Search logbook records"
-          />
-          <button class="btn-sm" id="exportBtn" title="Export as CSV">Export CSV</button>
-          <button class="btn-sm btn-danger" id="clearLogBtn" title="Clear all local entries">Clear</button>
-        </div>
-      </div>
-
-      <div class="table-container">
-        <div id="emptyState" class="empty-state">
-          <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
-          <p class="empty-title">No transactions recorded yet</p>
-          <p class="empty-sub">Completed form submissions will appear in this master logbook.</p>
-        </div>
-
-        <table class="minimal-table" id="recordsTable" style="display: none;">
-          <thead>
-            <tr>
-              <th>Ticket #</th>
-              <th>Date &amp; Time</th>
-              <th>Custodian</th>
-              <th>Tx Type</th>
-              <th>Asset</th>
-              <th>Model</th>
-              <th>Serial Number</th>
-              <th>Qty</th>
-              <th>Account</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-    </section>
-
   </div>
 
-  <!-- Minimal Confirmation Modal -->
+  <!-- Submission Receipt Modal -->
   <div class="modal-overlay" id="receiptModal" aria-hidden="true">
     <div class="modal-box">
       <div class="modal-top">
@@ -362,8 +257,8 @@
           </svg>
         </div>
         <div>
-          <h3 class="modal-heading">Transaction Recorded</h3>
-          <p class="modal-desc">Entry successfully logged to UPA IT Master Logbook V4.</p>
+          <h3 class="modal-heading">Registration Submitted</h3>
+          <p class="modal-desc">Your transaction has been recorded successfully.</p>
         </div>
       </div>
 
